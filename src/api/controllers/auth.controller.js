@@ -7,6 +7,9 @@ const PasswordResetToken = require('../models/passwordResetToken.model');
 const { jwtExpirationInterval } = require('../../config/vars');
 const APIError = require('../errors/api-error');
 const emailProvider = require('../services/emails/emailProvider');
+const accountSid = process.env.TWILIO_ACCOUNT_SID;
+const authToken = process.env.TWILIO_AUTH_TOKEN;
+const client = require('twilio')(accountSid, authToken);
 
 /**
  * Returns a formated object with tokens
@@ -30,16 +33,45 @@ function generateTokenResponse(user, accessToken) {
  */
 exports.register = async (req, res, next) => {
   try {
-    const userData = omit(req.body, 'role');
-    const user = await new User(userData).save();
-    const userTransformed = user.transform();
-    const token = generateTokenResponse(user, user.token());
-    res.status(httpStatus.CREATED);
-    return res.json({ token, user: userTransformed });
+    const verification = await client.verify.v2.services(process.env.TWILIO_SERVICE_SID)
+                .verifications
+                .create({to: '+19137559119', channel: 'whatsapp'})
+    if(verification.status == 'pending') {
+      req.session.phone = req.body.phone;
+      req.session.user = req.body;
+      return res.json({status: "Codesent"});
+    }
   } catch (error) {
     return next(User.checkDuplicateEmail(error));
   }
 };
+
+exports.phoneVerify = async (req, res, next) => {
+  try {
+    const phone = req.session.phone;
+    const code = req.body.code;
+    if(code) {
+      const verificationCheck = await client.verify.v2.services(process.env.TWILIO_SERVICE_SID)
+      .verificationChecks
+      .create({to: '+19137559119', code: code});
+      if (verificationCheck.status === 'approved') {
+        const userData = req.session.user;
+        const user = await new User(userData).save();
+        const userTransformed = user.transform();
+        const token = generateTokenResponse(user, user.token());
+        req.session.phone = undefined;
+        req.session.verified = true;
+        res.status(httpStatus.CREATED);
+        return res.json({ token, user: userTransformed });
+      } else {
+        err.message = "Code doesn't match";
+        return new APIError(err);
+      }
+    }
+  } catch(error) {
+    return next(error);
+  }
+}
 
 /**
  * Returns jwt token if valid username and password is provided

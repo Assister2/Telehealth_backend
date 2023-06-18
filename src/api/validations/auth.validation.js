@@ -2,10 +2,21 @@ const Joi = require('joi');
 
 module.exports = {
   // POST /v1/auth/register
+  // Doctor
   register: {
     body: {
+      username: Joi.string()
+        .required()
+        .min(6),
       email: Joi.string()
         .email()
+        .required(),
+      phone: Joi.string()
+        .required(),
+      license: Joi.string(),
+      speciality: Joi.string(),
+      role: Joi.string(),
+      gender: Joi.string()
         .required(),
       password: Joi.string()
         .required()
@@ -66,4 +77,11 @@ module.exports = {
       resetToken: Joi.string().required(),
     },
   },
+
+  //POST /v1/auth/verify
+  phoneVerify: {
+    body: {
+      code: Joi.string().required()
+    }
+  }
 };

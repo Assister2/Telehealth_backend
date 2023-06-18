@@ -1,4 +1,5 @@
 const express = require('express');
+const session = require('express-session');
 const morgan = require('morgan');
 const bodyParser = require('body-parser');
 const compress = require('compression');
@@ -16,6 +17,15 @@ const error = require('../api/middlewares/error');
 * @public
 */
 const app = express();
+
+const sessionOptions = {
+    secret: 'top-secret!',
+    resave: false,
+    saveUninitialized: true,
+    cookie: {}
+}
+
+app.use(session(sessionOptions));
 
 // request logging. dev: console | production: file
 app.use(morgan(logs));
@@ -35,7 +45,7 @@ app.use(methodOverride());
 app.use(helmet());
 
 // enable CORS - Cross Origin Resource Sharing
-app.use(cors());
+app.use(cors({origin: '*'}));
 
 // enable authentication
 app.use(passport.initialize());
@@ -44,7 +54,7 @@ passport.use('facebook', strategies.facebook);
 passport.use('google', strategies.google);
 
 // mount api v1 routes
-app.use('/v1', routes);
+app.use('/api/v1', routes);
 
 // if error is not an instanceOf APIError, convert it.
 app.use(error.converter);

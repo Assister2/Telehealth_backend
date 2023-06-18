@@ -5,6 +5,7 @@ const oAuthLogin = require('../../middlewares/auth').oAuth;
 const {
   login,
   register,
+  phoneVerify,
   oAuth,
   refresh,
   sendPasswordReset,
@@ -40,9 +41,19 @@ const router = express.Router();
  *
  * @apiError (Bad Request 400)  ValidationError  Some parameters may contain invalid values
  */
+// router.route('/register')
+//   .post((req, res, next) => {
+//     if(req.body.role == 'user') {
+//       validate(registerUser);
+//     }
+//     if(req.body.role == 'doctor') {
+//       validate(registerDoctor);
+//       return next(controller.register)
+//       // return res.json('111111')
+//     }
+//   });
 router.route('/register')
-  .post(validate(register), controller.register);
-
+  .post(validate(register), controller.register)
 /**
  * @api {post} v1/auth/login Login
  * @apiDescription Get an accessToken
@@ -101,6 +112,9 @@ router.route('/send-password-reset')
 router.route('/reset-password')
   .post(validate(passwordReset), controller.resetPassword);
 
+router.route('/verify')
+  .post(validate(phoneVerify), controller.phoneVerify)
+
 /**
  * @api {post} v1/auth/facebook Facebook Login
  * @apiDescription Login with facebook. Creates a new user if it does not exist
@@ -141,6 +155,6 @@ router.route('/facebook')
  * @apiError (Unauthorized 401)  Unauthorized    Incorrect access_token
  */
 router.route('/google')
-  .post(validate(oAuth), oAuthLogin('google'), controller.oAuth);
+  .post(validate(oAuth), controller.oAuth);
 
 module.exports = router;

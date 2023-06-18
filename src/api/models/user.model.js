@@ -11,13 +11,23 @@ const { env, jwtSecret, jwtExpirationInterval } = require('../../config/vars');
 /**
 * User Roles
 */
-const roles = ['user', 'admin'];
+const roles = ['user', 'doctor'];
 
 /**
  * User Schema
  * @private
  */
 const userSchema = new mongoose.Schema({
+  username: {
+    type: String,
+    required: true,
+    index: true,
+    trim: true
+  },
+  phone: {
+    type: String,
+    required: true
+  },
   email: {
     type: String,
     match: /^\S+@\S+\.\S+$/,
@@ -26,17 +36,21 @@ const userSchema = new mongoose.Schema({
     trim: true,
     lowercase: true,
   },
+  license: {
+    type: String,
+  },
+  speciality: {
+    type: String,
+  },
+  gender: {
+    type: String,
+    required: true
+  },
   password: {
     type: String,
     required: true,
     minlength: 6,
     maxlength: 128,
-  },
-  name: {
-    type: String,
-    maxlength: 128,
-    index: true,
-    trim: true,
   },
   services: {
     facebook: String,
