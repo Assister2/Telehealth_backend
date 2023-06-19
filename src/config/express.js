@@ -21,8 +21,7 @@ const app = express();
 const sessionOptions = {
     secret: 'top-secret!',
     resave: false,
-    saveUninitialized: true,
-    cookie: {}
+    saveUninitialized: true
 }
 
 app.use(session(sessionOptions));

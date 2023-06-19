@@ -33,13 +33,28 @@ function generateTokenResponse(user, accessToken) {
  */
 exports.register = async (req, res, next) => {
   try {
-    const verification = await client.verify.v2.services(process.env.TWILIO_SERVICE_SID)
-                .verifications
-                .create({to: '+19137559119', channel: 'whatsapp'})
-    if(verification.status == 'pending') {
-      req.session.phone = req.body.phone;
-      req.session.user = req.body;
-      return res.json({status: "Codesent"});
+    const userData = req.body;
+    const existUser = await User.findOne({email: req.body.email, phone: req.body.phone})
+    if(existUser) {
+      throw new APIError({
+        message: 'Validation Error',
+        errors: [{
+          field: 'email',
+          location: 'body',
+          messages: ['"email" already exists'],
+        }],
+        status: httpStatus.CONFLICT,
+        isPublic: true
+      });
+    } else {
+      const phone = req.body.phone;
+      const verification = await client.verify.v2.services(process.env.TWILIO_SERVICE_SID)
+                  .verifications
+                  .create({to: '+' + phone, channel: 'whatsapp'})
+      if(verification.status == 'pending') {
+        req.session.user = userData;
+        return res.json({status: "Codesent"});
+      }
     }
   } catch (error) {
     return next(User.checkDuplicateEmail(error));
@@ -48,28 +63,26 @@ exports.register = async (req, res, next) => {
 
 exports.phoneVerify = async (req, res, next) => {
   try {
-    const phone = req.session.phone;
     const code = req.body.code;
+    const phone = req.body.phone;
+    const userData = req.body.user;
     if(code) {
       const verificationCheck = await client.verify.v2.services(process.env.TWILIO_SERVICE_SID)
       .verificationChecks
-      .create({to: '+19137559119', code: code});
+      .create({to: '+' + phone, code: code});
       if (verificationCheck.status === 'approved') {
-        const userData = req.session.user;
         const user = await new User(userData).save();
         const userTransformed = user.transform();
         const token = generateTokenResponse(user, user.token());
-        req.session.phone = undefined;
-        req.session.verified = true;
         res.status(httpStatus.CREATED);
         return res.json({ token, user: userTransformed });
       } else {
         err.message = "Code doesn't match";
-        return new APIError(err);
+        throw new APIError(err);
       }
     }
   } catch(error) {
-    return next(error);
+    return next(User.checkDuplicateEmail(error));
   }
 }
 

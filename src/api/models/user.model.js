@@ -211,9 +211,8 @@ userSchema.statics = {
       return new APIError({
         message: 'Validation Error',
         errors: [{
-          field: 'email',
           location: 'body',
-          messages: ['"email" already exists'],
+          messages: ['"Email or Phone" already exists'],
         }],
         status: httpStatus.CONFLICT,
         isPublic: true,

@@ -9,7 +9,6 @@ const Speciality = require('../models/speciality.model');
 exports.list = async (req, res, next) => {
     try {
         const specialities = await Speciality.list();
-        console.log('333333333', specialities)
         res.json(specialities)
     } catch (error) {
         next(error);

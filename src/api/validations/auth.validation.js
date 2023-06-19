@@ -2,7 +2,6 @@ const Joi = require('joi');
 
 module.exports = {
   // POST /v1/auth/register
-  // Doctor
   register: {
     body: {
       username: Joi.string()
