@@ -18,11 +18,17 @@ const roles = ['user', 'doctor'];
  * @private
  */
 const userSchema = new mongoose.Schema({
-  username: {
+  firstname: {
     type: String,
-    required: true,
-    index: true,
-    trim: true
+    required: true
+  },
+  middlename: {
+    type: String,
+    required: true
+  },
+  lastname: {
+    type: String,
+    required: true
   },
   phone: {
     type: String,

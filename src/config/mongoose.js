@@ -22,8 +22,8 @@ if (env === 'development') {
  * @returns {object} Mongoose connection
  * @public
  */
-exports.connect = () => {
-  mongoose
+exports.connect = async () => {
+  await mongoose
     .connect(mongo.uri, {
       useCreateIndex: true,
       keepAlive: 1,

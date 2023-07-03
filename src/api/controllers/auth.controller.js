@@ -51,6 +51,7 @@ exports.register = async (req, res, next) => {
       const verification = await client.verify.v2.services(process.env.TWILIO_SERVICE_SID)
                   .verifications
                   .create({to: '+' + phone, channel: 'whatsapp'})
+                  console.log(1111111, '+' + verification)
       if(verification.status == 'pending') {
         req.session.user = userData;
         return res.json({status: "Codesent"});
@@ -64,12 +65,12 @@ exports.register = async (req, res, next) => {
 exports.phoneVerify = async (req, res, next) => {
   try {
     const code = req.body.code;
-    const phone = req.body.phone;
+    const phone = req.body.user.phone;
     const userData = req.body.user;
     if(code) {
       const verificationCheck = await client.verify.v2.services(process.env.TWILIO_SERVICE_SID)
-      .verificationChecks
-      .create({to: '+' + phone, code: code});
+                  .verificationChecks
+                  .create({to: '+' + phone, code: code});
       if (verificationCheck.status === 'approved') {
         const user = await new User(userData).save();
         const userTransformed = user.transform();
