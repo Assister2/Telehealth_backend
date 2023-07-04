@@ -20,18 +20,21 @@ const roles = ['user', 'doctor'];
 const userSchema = new mongoose.Schema({
   firstname: {
     type: String,
+    match: /^[abc]+$/,
     required: true
   },
   middlename: {
     type: String,
+    match: /^[abc]+$/,
     required: true
   },
   lastname: {
     type: String,
+    match: /^[abc]+$/,
     required: true
   },
   phone: {
-    type: String,
+    type: Number,
     required: true
   },
   email: {
@@ -226,6 +229,33 @@ userSchema.statics = {
       });
     }
     return error;
+  },
+
+  checkValidation(error) {
+    if (error.name === 'MongoError' && error.code === 11000) {
+      return new APIError({
+        message: 'Validation Error',
+        errors: [{
+          location: 'body',
+          messages: ['"Email" already exists'],
+        }],
+        status: httpStatus.CONFLICT,
+        isPublic: true,
+        stack: error.stack,
+      });
+    }
+    if (error.code === 60200) {
+      return new APIError({
+        message: 'Validation Error',
+        errors: [{
+          location: 'body',
+          messages: ['Whatsapp number is not valid'],
+        }],
+        status: httpStatus.CONFLICT,
+        isPublic: true,
+        stack: error.stack,
+      });
+    }
   },
 
   async oAuthLogin({

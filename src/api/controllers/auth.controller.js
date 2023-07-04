@@ -34,14 +34,13 @@ function generateTokenResponse(user, accessToken) {
 exports.register = async (req, res, next) => {
   try {
     const userData = req.body;
-    const existUser = await User.findOne({email: req.body.email, phone: req.body.phone})
+    const existUser = await User.findOne({email: req.body.email})
     if(existUser) {
       throw new APIError({
         message: 'Validation Error',
         errors: [{
-          field: 'email',
           location: 'body',
-          messages: ['"email" already exists'],
+          messages: ['User already exists'],
         }],
         status: httpStatus.CONFLICT,
         isPublic: true
@@ -51,14 +50,13 @@ exports.register = async (req, res, next) => {
       const verification = await client.verify.v2.services(process.env.TWILIO_SERVICE_SID)
                   .verifications
                   .create({to: '+' + phone, channel: 'whatsapp'})
-                  console.log(1111111, '+' + verification)
       if(verification.status == 'pending') {
         req.session.user = userData;
         return res.json({status: "Codesent"});
       }
     }
   } catch (error) {
-    return next(User.checkDuplicateEmail(error));
+    return next(User.checkValidation(error));
   }
 };
 
