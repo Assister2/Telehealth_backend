@@ -34,14 +34,15 @@ function generateTokenResponse(user, accessToken) {
 exports.register = async (req, res, next) => {
   try {
     const userData = req.body;
-    const existUser = await User.findOne({email: req.body.email})
-    if(existUser) {
-      console.log(1111111, existUser)
+    const existUserWithEmail = await User.findOne({email: req.body.email});
+    const existUserWithPhone = await User.findOne({phone: req.body.phone});
+
+    if(existUserWithEmail || existUserWithPhone) {
       return next(new APIError({
         message: 'Validation Error',
         errors: [{
           location: 'body',
-          messages: ['"Email" already exists'],
+          messages: ['"Email or Phone" already exists'],
         }],
         status: httpStatus.CONFLICT,
         isPublic: true
