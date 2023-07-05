@@ -113,7 +113,7 @@ router.route('/reset-password')
   .post(validate(passwordReset), controller.resetPassword);
 
 router.route('/verify')
-  .post(validate(phoneVerify), controller.phoneVerify)
+  .post(controller.phoneVerify)
 
 /**
  * @api {post} v1/auth/facebook Facebook Login

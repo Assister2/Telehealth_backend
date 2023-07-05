@@ -65,23 +65,21 @@ exports.phoneVerify = async (req, res, next) => {
     const code = req.body.code;
     const phone = req.body.user.phone;
     const userData = req.body.user;
-    if(code) {
-      const verificationCheck = await client.verify.v2.services(process.env.TWILIO_SERVICE_SID)
-                  .verificationChecks
-                  .create({to: '+' + phone, code: code});
-      if (verificationCheck.status === 'approved') {
-        const user = await new User(userData).save();
-        const userTransformed = user.transform();
-        const token = generateTokenResponse(user, user.token());
-        res.status(httpStatus.CREATED);
-        return res.json({ token, user: userTransformed });
-      } else {
-        err.message = "Code doesn't match";
-        throw new APIError(err);
-      }
+    const verificationCheck = await client.verify.v2.services(process.env.TWILIO_SERVICE_SID)
+                .verificationChecks
+                .create({to: '+' + phone, code: code});
+    console.log(11111, verificationCheck)
+    if (verificationCheck.status === 'approved') {
+      const user = await new User(userData).save();
+      const userTransformed = user.transform();
+      const token = generateTokenResponse(user, user.token());
+      res.status(httpStatus.CREATED);
+      return res.json({ token, user: userTransformed });
+    } else {
+      return next(User.checkVerificationCode(verificationCheck));
     }
   } catch(error) {
-    return next(User.checkDuplicateEmail(error));
+    return next(User.checkVerificationCode(error));
   }
 }
 

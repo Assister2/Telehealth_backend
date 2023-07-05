@@ -20,17 +20,14 @@ const roles = ['user', 'doctor'];
 const userSchema = new mongoose.Schema({
   firstname: {
     type: String,
-    match: /^[abc]+$/,
     required: true
   },
   middlename: {
     type: String,
-    match: /^[abc]+$/,
     required: true
   },
   lastname: {
     type: String,
-    match: /^[abc]+$/,
     required: true
   },
   phone: {
@@ -250,6 +247,33 @@ userSchema.statics = {
         errors: [{
           location: 'body',
           messages: ['Whatsapp number is not valid'],
+        }],
+        status: httpStatus.CONFLICT,
+        isPublic: true,
+        stack: error.stack,
+      });
+    }
+  },
+
+  checkVerificationCode(error) {
+    if(!error.valid && error.status == 'pending') {
+      return new APIError({
+        message: 'Invalid code',
+        errors: [{
+          location: 'body',
+          messages: ["Verification code doesn't match"],
+        }],
+        status: httpStatus.CONFLICT,
+        isPublic: true,
+        stack: error.stack,
+      });
+    }
+    if(error.status == 400 && error.code == 60200) {
+      return new APIError({
+        message: 'Not allowed',
+        errors: [{
+          location: 'body',
+          messages: ["Verification code isn't allowed to be empty"],
         }],
         status: httpStatus.CONFLICT,
         isPublic: true,
