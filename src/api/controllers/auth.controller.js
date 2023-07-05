@@ -36,15 +36,16 @@ exports.register = async (req, res, next) => {
     const userData = req.body;
     const existUser = await User.findOne({email: req.body.email})
     if(existUser) {
-      throw new APIError({
+      console.log(1111111, existUser)
+      return next(new APIError({
         message: 'Validation Error',
         errors: [{
           location: 'body',
-          messages: ['User already exists'],
+          messages: ['"Email" already exists'],
         }],
         status: httpStatus.CONFLICT,
         isPublic: true
-      });
+      }));
     } else {
       const phone = req.body.phone;
       const verification = await client.verify.v2.services(process.env.TWILIO_SERVICE_SID)
