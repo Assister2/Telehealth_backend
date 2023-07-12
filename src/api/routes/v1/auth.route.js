@@ -115,6 +115,9 @@ router.route('/reset-password')
 router.route('/verify')
   .post(controller.phoneVerify)
 
+router.route('/regencode')
+  .post(controller.regenCode)
+
 /**
  * @api {post} v1/auth/facebook Facebook Login
  * @apiDescription Login with facebook. Creates a new user if it does not exist

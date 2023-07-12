@@ -262,7 +262,7 @@ userSchema.statics = {
         message: 'Invalid code',
         errors: [{
           location: 'body',
-          messages: ["Verification code doesn't match"],
+          messages: ["Invalid code entered. Resend code"],
         }],
         status: httpStatus.CONFLICT,
         isPublic: true,

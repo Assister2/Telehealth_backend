@@ -70,7 +70,7 @@ exports.phoneVerify = async (req, res, next) => {
     const verificationCheck = await client.verify.v2.services(process.env.TWILIO_SERVICE_SID)
                 .verificationChecks
                 .create({to: '+' + phone, code: code});
-    console.log(11111, verificationCheck)
+    console.log(1111111, verificationCheck)
     if (verificationCheck.status === 'approved') {
       const user = await new User(userData).save();
       const userTransformed = user.transform();
@@ -99,6 +99,20 @@ exports.login = async (req, res, next) => {
     return next(error);
   }
 };
+
+exports.regenCode = async (req, res, next) => {
+  try {
+    const phone = req.body.phone;
+    const verification = await client.verify.v2.services(process.env.TWILIO_SERVICE_SID)
+                  .verifications
+                  .create({to: '+' + phone, channel: 'whatsapp'})
+    if(verification.status == 'pending') {
+      return res.json({status: true});
+    }
+  } catch(error) {
+
+  }
+}
 
 /**
  * login with an existing user or creates a new one if valid accessToken token
