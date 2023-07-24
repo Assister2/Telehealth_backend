@@ -1,12 +1,21 @@
 const mongoose = require('mongoose');
 const httpStatus = require('http-status');
-const { omitBy, isNil } = require('lodash');
+const { omitBy, isNil, reject } = require('lodash');
+const Grid = require('gridfs-stream');
+eval(`Grid.prototype.findOne = ${Grid.prototype.findOne.toString().replace('nextObject', 'next')}`);
 const bcrypt = require('bcryptjs');
 const moment = require('moment-timezone');
 const jwt = require('jwt-simple');
 const uuidv4 = require('uuid/v4');
 const APIError = require('../errors/api-error');
 const { env, jwtSecret, jwtExpirationInterval } = require('../../config/vars');
+
+let gfs;
+
+mongoose.connection.once('open', () => {
+  gfs = new Grid(mongoose.connection.db, mongoose.mongo);
+  gfs.collection('photos');
+})
 
 /**
 * User Roles
@@ -53,6 +62,9 @@ const userSchema = new mongoose.Schema({
     type: String,
     required: true
   },
+  birthday: {
+    type: String,
+  },
   password: {
     type: String,
     required: true,
@@ -68,8 +80,8 @@ const userSchema = new mongoose.Schema({
     enum: roles,
     default: 'user',
   },
-  picture: {
-    type: String,
+  avatar: {
+    type: Object,
     trim: true,
   },
 }, {
@@ -298,6 +310,44 @@ userSchema.statics = {
       services: { [service]: id }, email, password, name, picture,
     });
   },
+
+  getUserProfileWithImages(avatarId) {
+    return new Promise((resolve, reject) => {
+      gfs.files.find({_id: avatarId}).toArray((err, files) => {
+        if (err) {
+          reject(err);
+        } else {
+          const filePromises = files.map((file) => {
+            return new Promise((resolve, reject) => {
+              const readStream = gfs.createReadStream({_id: file._id});
+              let data = '';
+              readStream.on('data', (chunk) => {
+                data += chunk.toString('base64');
+              });
+              readStream.on('end', () => {
+                resolve({
+                  filename: file.filename,
+                  data: data
+                })
+              })
+              readStream.on('error', (err) => {
+                reject(err);
+              })
+            })
+          })
+  
+          Promise.all(filePromises)
+            .then((images) => {
+              resolve(images);
+            })
+            .catch((err) => {
+              reject(err);
+            })
+        }
+      })
+
+    })
+  }
 };
 
 /**

@@ -8,8 +8,11 @@ const {
   replaceUser,
   updateUser,
 } = require('../../validations/user.validation');
+const { upload } = require('../../../config/mongoose')
+
 
 const router = express.Router();
+
 
 /**
  * Load user when API with userId route parameter is hit
@@ -139,7 +142,8 @@ router
    * @apiError (Forbidden 403)    Forbidden    Only user with same id or admins can modify the data
    * @apiError (Not Found 404)    NotFound     User does not exist
    */
-  .put(authorize(LOGGED_USER), validate(replaceUser), controller.replace)
+  // .put(authorize(LOGGED_USER), validate(replaceUser), controller.replace)
+  .put(authorize(LOGGED_USER), controller.replace)
   /**
    * @api {patch} v1/users/:id Update User
    * @apiDescription Update some fields of a user document
@@ -167,7 +171,8 @@ router
    * @apiError (Forbidden 403)    Forbidden    Only user with same id or admins can modify the data
    * @apiError (Not Found 404)    NotFound     User does not exist
    */
-  .patch(authorize(LOGGED_USER), validate(updateUser), controller.update)
+  // .post(authorize(LOGGED_USER), validate(updateUser), controller.update)
+  .post(authorize(LOGGED_USER), upload.single('avatar'), upload.array('clinicImages', 5),  controller.update)
   /**
    * @api {patch} v1/users/:id Delete User
    * @apiDescription Delete a user

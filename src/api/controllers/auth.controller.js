@@ -70,7 +70,6 @@ exports.phoneVerify = async (req, res, next) => {
     const verificationCheck = await client.verify.v2.services(process.env.TWILIO_SERVICE_SID)
                 .verificationChecks
                 .create({to: '+' + phone, code: code});
-    console.log(1111111, verificationCheck)
     if (verificationCheck.status === 'approved') {
       const user = await new User(userData).save();
       const userTransformed = user.transform();
