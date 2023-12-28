@@ -48,8 +48,35 @@ exports.loggedIn = async (req, res) => {
     .catch((err) => {
       // res.status(500).json({error: 'An error occured'})
     })
-}
+};
 
+/**
+ * Get logged in user's Schedule
+ * @public
+ */
+exports.getSchedule = async (req, res, next) => {
+  try {
+    const id = req.user.id;
+    const schedules = req.user.schedule;
+    res.json(schedules);
+  } catch(error){
+    next(error);
+  }
+};
+
+
+
+/**
+ * Add logged User's Schedule
+ * @public 
+ */
+exports.addSchedule = async (req,res,next) => {
+  try{
+
+  } catch(error){
+
+  }
+};
 /**
  * Create new user
  * @public

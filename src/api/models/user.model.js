@@ -7,6 +7,7 @@ const bcrypt = require('bcryptjs');
 const moment = require('moment-timezone');
 const jwt = require('jwt-simple');
 const uuidv4 = require('uuid/v4');
+const Schedule = require('./doctor/schedule.model');
 const APIError = require('../errors/api-error');
 const { env, jwtSecret, jwtExpirationInterval } = require('../../config/vars');
 
@@ -83,6 +84,10 @@ const userSchema = new mongoose.Schema({
   avatar: {
     type: Object,
     trim: true,
+  },
+  schedule: {
+    type: Array,
+    ref: Schedule,
   },
 }, {
   timestamps: true,
